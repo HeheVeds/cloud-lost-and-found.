@@ -1,5 +1,5 @@
 import os
-from flask import Flask
+from flask import Flask, send_file, send_from_directory
 from flask_login import LoginManager
 from app.config import Config
 from app.models import db, User
@@ -14,8 +14,33 @@ def load_user(user_id):
     return db.session.get(User, int(user_id))
 
 def create_app(config_class=Config):
-    app = Flask(__name__)
+    # Dynamically detect template and static directories (supports both flat and nested GitHub layouts)
+    base = os.path.dirname(os.path.abspath(__file__))
+    tmpl_dir = os.path.join(base, "templates")
+    if not os.path.isdir(tmpl_dir):
+        tmpl_dir = base
+        
+    static_dir = os.path.join(base, "static")
+    if not os.path.isdir(static_dir):
+        static_dir = base
+
+    app = Flask(__name__, template_folder=tmpl_dir, static_folder=static_dir)
     app.config.from_object(config_class)
+
+    # Static file fallback routes for flat repository uploads
+    @app.route("/static/css/style.css")
+    def _serve_css():
+        nested = os.path.join(app.static_folder, "css", "style.css")
+        if os.path.isfile(nested):
+            return send_file(nested)
+        return send_from_directory(app.static_folder, "style.css")
+
+    @app.route("/static/js/main.js")
+    def _serve_js():
+        nested = os.path.join(app.static_folder, "js", "main.js")
+        if os.path.isfile(nested):
+            return send_file(nested)
+        return send_from_directory(app.static_folder, "main.js")
 
     # Ensure upload folder exists for local storage fallback
     os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
