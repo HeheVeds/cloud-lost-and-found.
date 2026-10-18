@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block title %}Administrator Dashboard{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h3 class="fw-bold mb-1"><i class="fa-solid fa-gauge-high text-primary me-2"></i> Administrator Dashboard</h3>
+    <p class="text-muted small mb-0">Manage all campus reports, update item statuses, and handle resolved cases.</p>
+</div>
+
+<!-- Stats Row -->
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-lg-3">
+        <div class="stat-card d-flex align-items-center">
+            <div class="stat-icon bg-primary text-white me-3">
+                <i class="fa-solid fa-boxes-stacked"></i>
+            </div>
+            <div>
+                <div class="text-muted small">Total Reports</div>
+                <h4 class="fw-bold mb-0 text-dark">{{ total_items }}</h4>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-lg-3">
+        <div class="stat-card d-flex align-items-center">
+            <div class="stat-icon bg-danger text-white me-3">
+                <i class="fa-solid fa-circle-question"></i>
+            </div>
+            <div>
+                <div class="text-muted small">Active Lost</div>
+                <h4 class="fw-bold mb-0 text-dark">{{ lost_count }}</h4>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-lg-3">
+        <div class="stat-card d-flex align-items-center">
+            <div class="stat-icon bg-info text-white me-3">
+                <i class="fa-solid fa-hand-holding-hand"></i>
+            </div>
+            <div>
+                <div class="text-muted small">Items Found</div>
+                <h4 class="fw-bold mb-0 text-dark">{{ found_count }}</h4>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-lg-3">
+        <div class="stat-card d-flex align-items-center">
+            <div class="stat-icon bg-success text-white me-3">
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <div>
+                <div class="text-muted small">Returned to Owner</div>
+                <h4 class="fw-bold mb-0 text-dark">{{ returned_count }}</h4>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Manage All Reports Table -->
+<div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+    <div class="card-header bg-white border-bottom p-3 d-flex justify-content-between align-items-center">
+        <h5 class="fw-bold mb-0"><i class="fa-solid fa-list-check me-2 text-secondary"></i> All Campus Reports</h5>
+        <span class="badge bg-light text-secondary border">Total: {{ items|length }} Items</span>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th scope="col" style="width: 50px;">ID</th>
+                    <th scope="col" style="width: 70px;">Photo</th>
+                    <th scope="col">Title & Category</th>
+                    <th scope="col">Reporter</th>
+                    <th scope="col">Location & Date</th>
+                    <th scope="col">Cloud Storage</th>
+                    <th scope="col" style="min-width: 170px;">Status Management</th>
+                    <th scope="col" class="text-end" style="width: 120px;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if items %}
+                    {% for item in items %}
+                    <tr>
+                        <td class="text-muted fw-bold">#{{ item.id }}</td>
+                        <td>
+                            {% if item.image_url %}
+                                <img src="{{ item.image_url }}" alt="{{ item.title }}" class="rounded shadow-sm" style="width: 46px; height: 46px; object-fit: cover;">
+                            {% else %}
+                                <div class="bg-light rounded d-flex align-items-center justify-content-center text-muted" style="width: 46px; height: 46px;">
+                                    <i class="fa-solid fa-image"></i>
+                                </div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{{ url_for('main.item_detail', item_id=item.id) }}" class="fw-bold text-dark text-decoration-none d-block">
+                                {{ item.title }}
+                            </a>
+                            <span class="badge bg-light text-muted border small">{{ item.category }}</span>
+                            <span class="badge bg-secondary-subtle text-secondary small">{{ item.item_type|capitalize }}</span>
+                        </td>
+                        <td>
+                            <div class="small fw-semibold">{{ item.reporter.name }}</div>
+                            <div class="small text-muted">{{ item.contact_info }}</div>
+                        </td>
+                        <td>
+                            <div class="small text-dark">{{ item.location }}</div>
+                            <div class="small text-muted"><i class="fa-regular fa-calendar me-1"></i>{{ item.item_date }}</div>
+                        </td>
+                        <td>
+                            <span class="badge bg-dark-subtle text-dark border">
+                                <i class="fa-solid fa-cloud me-1"></i> {{ item.storage_provider }}
+                            </span>
+                        </td>
+                        <td>
+                            <form method="POST" action="{{ url_for('main.update_status', item_id=item.id) }}" class="d-flex gap-1">
+                                <select name="status" class="form-select form-select-sm">
+                                    <option value="Lost" {% if item.status == 'Lost' %}selected{% endif %}>Lost</option>
+                                    <option value="Found" {% if item.status == 'Found' %}selected{% endif %}>Found</option>
+                                    <option value="Returned" {% if item.status == 'Returned' %}selected{% endif %}>Returned</option>
+                                </select>
+                                <button type="submit" class="btn btn-outline-primary btn-sm" title="Save Status">
+                                    <i class="fa-solid fa-floppy-disk"></i>
+                                </button>
+                            </form>
+                        </td>
+                        <td class="text-end">
+                            <a href="{{ url_for('main.item_detail', item_id=item.id) }}" class="btn btn-outline-secondary btn-sm me-1" title="View">
+                                <i class="fa-solid fa-eye"></i>
+                            </a>
+                            
+                            <!-- Delete Button with form -->
+                            <form method="POST" action="{{ url_for('main.delete_item', item_id=item.id) }}" class="d-inline" onsubmit="return confirm('Are you sure you want to permanently delete this report?');">
+                                <button type="submit" class="btn btn-outline-danger btn-sm" title="Delete Report">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="8" class="text-center py-4 text-muted">
+                            No reported items in the database yet.
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

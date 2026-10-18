@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Create Account{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+            <div class="card-header bg-dark text-white text-center py-4">
+                <i class="fa-solid fa-user-plus fa-3x mb-2 text-info"></i>
+                <h4 class="fw-bold mb-0">Student & Admin Registration</h4>
+                <p class="small mb-0 opacity-75">Join the Campus Lost & Found Cloud Portal</p>
+            </div>
+
+            <div class="card-body p-4">
+                <form method="POST" action="{{ url_for('main.register') }}">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Full Name</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fa-solid fa-user text-muted"></i></span>
+                            <input type="text" name="name" class="form-control" placeholder="e.g. John Doe" required autofocus>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Campus Email Address</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fa-solid fa-envelope text-muted"></i></span>
+                            <input type="email" name="email" class="form-control" placeholder="student@campus.edu" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fa-solid fa-lock text-muted"></i></span>
+                            <input type="password" name="password" class="form-control" placeholder="Create a strong password" required>
+                        </div>
+                        <small class="text-muted">Password will be hashed using scrypt/pbkdf2 before database storage.</small>
+                    </div>
+
+                    <!-- Role Selection (Demonstrates Role-Based Access Control) -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Account Role (RBAC)</label>
+                        <select name="role" id="roleSelect" class="form-select">
+                            <option value="student" selected>Student / General User</option>
+                            <option value="admin">Campus Administrator</option>
+                        </select>
+                    </div>
+
+                    <!-- Secret Key field shown only if Admin is selected -->
+                    <div class="mb-4 d-none" id="adminKeyField">
+                        <div class="p-3 bg-warning-subtle border border-warning rounded-3">
+                            <label class="form-label fw-bold text-dark mb-1">
+                                <i class="fa-solid fa-shield-halved text-warning me-1"></i> Admin Verification Secret Key
+                            </label>
+                            <input type="password" name="admin_key" class="form-control" placeholder="Enter ADMIN_SECRET_KEY">
+                            <small class="text-muted d-block mt-1">Default project key: <code>ADMIN_CLOUD_2026</code></small>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold mb-3">
+                        <i class="fa-solid fa-check me-1"></i> Complete Registration
+                    </button>
+                </form>
+
+                <div class="text-center mt-2 small">
+                    <span>Already registered? </span>
+                    <a href="{{ url_for('main.login') }}" class="fw-semibold text-primary text-decoration-none">Sign in here</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

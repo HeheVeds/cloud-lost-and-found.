@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+
+{% block title %}Cloud Diagnostics & Syllabus Demonstration{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="p-4 bg-dark text-white rounded-4 shadow-sm">
+            <div class="d-flex align-items-center mb-2">
+                <i class="fa-solid fa-cloud-arrow-up text-info fa-2x me-3"></i>
+                <div>
+                    <h3 class="fw-bold mb-0">Cloud Computing Laboratory Demonstration</h3>
+                    <p class="text-secondary small mb-0">Live diagnostics and syllabus mapping for project viva and practical exam evaluation</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Live Diagnostics Cards -->
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100 border-0 shadow-sm rounded-4">
+            <div class="card-header bg-white border-bottom p-3">
+                <h5 class="fw-bold mb-0 text-primary">
+                    <i class="fa-solid fa-server me-2"></i> Live Infrastructure & Runtime Status
+                </h5>
+            </div>
+            <div class="card-body p-4">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                        <div>
+                            <strong>Host Identifier / Container ID</strong>
+                            <div class="small text-muted">Virtual machine or container hostname</div>
+                        </div>
+                        <span class="badge bg-secondary font-monospace">{{ metrics.hostname }}</span>
+                    </li>
+
+                    <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                        <div>
+                            <strong>Containerized Runtime</strong>
+                            <div class="small text-muted">Docker Engine container isolation</div>
+                        </div>
+                        {% if metrics.is_docker %}
+                            <span class="badge bg-success"><i class="fa-brands fa-docker me-1"></i> Running inside Docker</span>
+                        {% else %}
+                            <span class="badge bg-info"><i class="fa-solid fa-desktop me-1"></i> Host / Native Python</span>
+                        {% endif %}
+                    </li>
+
+                    <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                        <div>
+                            <strong>Service Architecture</strong>
+                            <div class="small text-muted">SaaS Layer / Web Application</div>
+                        </div>
+                        <span class="badge bg-primary">Flask 3.0 / Gunicorn</span>
+                    </li>
+
+                    <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                        <div>
+                            <strong>Database Backend (IaaS/DBaaS)</strong>
+                            <div class="small text-muted">Relational cloud database</div>
+                        </div>
+                        <span class="badge {% if 'RDS' in metrics.database_engine %}bg-success{% else %}bg-warning text-dark{% endif %}">
+                            {{ metrics.database_engine }}
+                        </span>
+                    </li>
+
+                    <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                        <div>
+                            <strong>Object Storage Backend</strong>
+                            <div class="small text-muted">AWS S3 or Local fallback</div>
+                        </div>
+                        <span class="badge {% if metrics.cloud_storage_active %}bg-success{% else %}bg-secondary{% endif %}">
+                            {% if metrics.cloud_storage_active %}Amazon S3 (Active){% else %}Local Disk Storage{% endif %}
+                        </span>
+                    </li>
+
+                    <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                        <div>
+                            <strong>Host Platform / Kernel</strong>
+                            <div class="small text-muted">Virtualization OS environment</div>
+                        </div>
+                        <span class="small font-monospace text-muted">{{ metrics.os_platform }}</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- AWS S3 & Cloud Storage Connection Card -->
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100 border-0 shadow-sm rounded-4">
+            <div class="card-header bg-white border-bottom p-3">
+                <h5 class="fw-bold mb-0 text-success">
+                    <i class="fa-solid fa-hard-drive me-2"></i> Cloud Storage (AWS S3) Status
+                </h5>
+            </div>
+            <div class="card-body p-4">
+                <div class="p-3 rounded-3 mb-3 {% if metrics.s3_status.status == 'Connected (Online)' %}bg-success-subtle border border-success{% elif metrics.s3_status.status == 'Disabled' %}bg-light border{% else %}bg-danger-subtle border border-danger{% endif %}">
+                    <div class="d-flex align-items-center mb-1">
+                        <i class="fa-solid fa-circle-dot me-2 {% if metrics.s3_status.status == 'Connected (Online)' %}text-success{% elif metrics.s3_status.status == 'Disabled' %}text-secondary{% else %}text-danger{% endif %}"></i>
+                        <h6 class="fw-bold mb-0">Status: {{ metrics.s3_status.status }}</h6>
+                    </div>
+                    <p class="small mb-0 text-muted">{{ metrics.s3_status.message }}</p>
+                </div>
+
+                <div class="row g-2 mb-3">
+                    <div class="col-6">
+                        <div class="border rounded-3 p-2">
+                            <small class="text-muted d-block">Target S3 Bucket</small>
+                            <span class="fw-bold font-monospace small text-dark">{{ metrics.s3_status.bucket or 'Not Configured' }}</span>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="border rounded-3 p-2">
+                            <small class="text-muted d-block">AWS Region</small>
+                            <span class="fw-bold font-monospace small text-dark">{{ metrics.s3_status.region or 'Not Configured' }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="alert alert-primary py-2 px-3 small mb-0">
+                    <i class="fa-solid fa-lightbulb me-1"></i>
+                    <strong>Exam Viva Tip:</strong> Object storage in AWS S3 is flat and key-based (unlike hierarchical block storage on an EC2 EBS disk). It offers 99.999999999% (11 9's) durability.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Syllabus Mapping Table -->
+    <div class="col-12 mb-4">
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+            <div class="card-header bg-primary text-white p-3">
+                <h5 class="fw-bold mb-0">
+                    <i class="fa-solid fa-graduation-cap me-2"></i> Mapping to Cloud Computing Laboratory Syllabus
+                </h5>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th scope="col" style="width: 180px;">Syllabus Concept</th>
+                            <th scope="col" style="width: 220px;">Implementation in Project</th>
+                            <th scope="col">How to Demonstrate to Examiner</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong class="text-primary"><i class="fa-solid fa-microchip me-1"></i> Virtualization</strong></td>
+                            <td>AWS EC2 Virtual Machine instance running Linux (Ubuntu 24.04).</td>
+                            <td>Show the EC2 instance running on AWS Nitro hypervisor with dedicated vCPU and RAM allocation.</td>
+                        </tr>
+                        <tr>
+                            <td><strong class="text-primary"><i class="fa-solid fa-server me-1"></i> IaaS</strong> (Infrastructure as a Service)</td>
+                            <td>AWS EC2 compute, Elastic Block Store (EBS) volume, Public Elastic IP, VPC subnet.</td>
+                            <td>Show AWS EC2 console with instance type (t2.micro / t3.micro), public IP, security group rules, and SSH terminal.</td>
+                        </tr>
+                        <tr>
+                            <td><strong class="text-primary"><i class="fa-solid fa-layer-group me-1"></i> PaaS</strong> (Platform as a Service)</td>
+                            <td>Deployable container package suitable for AWS App Runner or Elastic Beanstalk.</td>
+                            <td>Explain how managed platforms abstract OS patching, auto-scaling, and web server configuration.</td>
+                        </tr>
+                        <tr>
+                            <td><strong class="text-primary"><i class="fa-solid fa-globe me-1"></i> SaaS</strong> (Software as a Service)</td>
+                            <td>Campus Lost and Found web portal accessible from any browser.</td>
+                            <td>Access <code>http://&lt;EC2_PUBLIC_IP&gt;:5000</code> or port 80 from student mobile/laptop without installing software.</td>
+                        </tr>
+                        <tr>
+                            <td><strong class="text-primary"><i class="fa-brands fa-docker me-1"></i> Containerization</strong></td>
+                            <td><code>Dockerfile</code> packaging Python 3.13, dependencies, Gunicorn, and app code.</td>
+                            <td>Execute <code>docker ps</code> and <code>docker build</code> commands on the EC2 terminal; show container port mapping <code>5000:5000</code>.</td>
+                        </tr>
+                        <tr>
+                            <td><strong class="text-primary"><i class="fa-solid fa-database me-1"></i> Cloud Database</strong></td>
+                            <td>AWS RDS MySQL managed database instance.</td>
+                            <td>Show RDS endpoint in AWS Console; query tables from MySQL client or check data persistence across container restarts.</td>
+                        </tr>
+                        <tr>
+                            <td><strong class="text-primary"><i class="fa-solid fa-cloud-arrow-up me-1"></i> Cloud Storage</strong></td>
+                            <td>Amazon S3 bucket for storing uploaded item photographs.</td>
+                            <td>Upload an item image, then open AWS S3 console to show the image object stored in the S3 bucket with direct S3 URL.</td>
+                        </tr>
+                        <tr>
+                            <td><strong class="text-primary"><i class="fa-solid fa-network-wired me-1"></i> Cloud Networking</strong></td>
+                            <td>VPC, Subnet, Internet Gateway, Security Groups (Inbound ports 22, 80, 5000).</td>
+                            <td>Show AWS Security Group rules restricting DB port 3306 to EC2 while exposing web port 5000 to the internet.</td>
+                        </tr>
+                        <tr>
+                            <td><strong class="text-primary"><i class="fa-solid fa-shield-halved me-1"></i> Cloud Security</strong></td>
+                            <td>Werkzeug scrypt password hashing, Role-Based Access Control (Admin/Student), IAM access keys.</td>
+                            <td>Inspect database to show passwords stored as hashes; verify that non-admin students cannot access admin status controls.</td>
+                        </tr>
+                        <tr>
+                            <td><strong class="text-primary"><i class="fa-solid fa-chart-line me-1"></i> Cloud Monitoring</strong></td>
+                            <td>AWS CloudWatch metrics for EC2 and RDS.</td>
+                            <td>Open CloudWatch dashboard in AWS Management Console to show live CPU Utilization, Network In/Out, and disk metrics.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
